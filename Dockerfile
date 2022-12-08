@@ -14,9 +14,11 @@ ADD ./ /go/src/github.com/Netflix/chaosmonkey
 RUN make all
 
 FROM alpine:3.17
+
 COPY --from=builder /go/src/github.com/Netflix/chaosmonkey/build/chaosmonkey /opt/chaosmonkey/bin/chaosmonkey
-COPY --from-builder /go/src/github.com/Netflix/chaosmonkey/docs/chaosmonkey-terminate.sh /opt/chaosmonkey/bin/chaosmonkey-terminate.sh
-COPY --from-builder /go/src/github.com/Netflix/chaosmonkey/docs/chaosmonkey.toml /etc/chaosmonkey.toml
+
+ADD ./docs/chaosmonkey-terminate.sh /opt/chaosmonkey/bin/chaosmonkey-terminate.sh
+ADD ./docs/chaosmonkey.toml /etc/chaosmonkey.toml
 
 WORKDIR /opt/chaosmonkey/bin
 

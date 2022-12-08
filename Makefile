@@ -21,7 +21,7 @@ ifeq ($(UNAME_S),Linux)
 endif
 
 docker:
-	docker build . -t Netflix/chaosmonkey:$${COMMIT}
+	docker build . -t netflix/chaosmonkey:${COMMIT}
 
 all: clean test build
 
