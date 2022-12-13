@@ -13,13 +13,19 @@ ADD ./ /go/src/github.com/Netflix/chaosmonkey
 
 RUN make all
 
-FROM alpine:3.17
+FROM ubuntu:20.04
 
 COPY --from=builder /go/src/github.com/Netflix/chaosmonkey/build/chaosmonkey /opt/chaosmonkey/bin/chaosmonkey
 
-ADD ./docs/chaosmonkey-terminate.sh /opt/chaosmonkey/bin/chaosmonkey-terminate.sh
 ADD ./docs/chaosmonkey.toml /etc/chaosmonkey.toml
+ADD ./docs/chaosmonkey-terminate.sh /opt/chaosmonkey/bin/chaosmonkey-terminate.sh
+ADD ./docs/chaosmonkey-schedule.sh /opt/chaosmonkey/bin/chaosmonkey-schedule.sh
 
-WORKDIR /opt/chaosmonkey/bin
 
-CMD ["/opt/chaosmonkey/bin/chaosmonkey"]
+
+RUN apt-get update
+RUN apt-get install -y cron
+
+ADD ./docs/chaosmonkey-cron /etc/cron.d/chaosmonkey-cron
+
+ENTRYPOINT ["cron", "-f"]
