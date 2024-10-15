@@ -23,15 +23,15 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 
-	"github.com/Netflix/chaosmonkey"
-	"github.com/Netflix/chaosmonkey/cal"
-	"github.com/Netflix/chaosmonkey/config"
-	"github.com/Netflix/chaosmonkey/config/param"
-	"github.com/Netflix/chaosmonkey/deps"
-	"github.com/Netflix/chaosmonkey/grp"
-	"github.com/Netflix/chaosmonkey/migration"
-	"github.com/Netflix/chaosmonkey/schedstore"
-	"github.com/Netflix/chaosmonkey/schedule"
+	"github.com/Netflix/chaosmonkey/v2"
+	"github.com/Netflix/chaosmonkey/v2/cal"
+	"github.com/Netflix/chaosmonkey/v2/config"
+	"github.com/Netflix/chaosmonkey/v2/config/param"
+	"github.com/Netflix/chaosmonkey/v2/deps"
+	"github.com/Netflix/chaosmonkey/v2/grp"
+	"github.com/Netflix/chaosmonkey/v2/migration"
+	"github.com/Netflix/chaosmonkey/v2/schedstore"
+	"github.com/Netflix/chaosmonkey/v2/schedule"
 	"github.com/rubenv/sql-migrate"
 	"log"
 )
@@ -46,7 +46,7 @@ func TxDeadlock(err error) bool {
 	switch err := errors.Cause(err).(type) {
 	case *mysql.MySQLError:
 		// ER_LOCK_DEADLOCK
-		// See: https://dev.mysql.com/doc/refman/5.6/en/error-messages-server.html
+		// See: https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html#error_er_lock_deadlock
 		return err.Number == 1213
 	default:
 		return false
@@ -242,10 +242,10 @@ func schedExists(tx *sql.Tx, date time.Time) (result bool, err error) {
 // See: https://github.com/go-sql-driver/mysql#dsn-data-source-name
 func dsn(host string, port int, user string, password string, dbname string) string {
 	params := map[string]string{
-		"tx_isolation": "SERIALIZABLE", // we need serializable transactions for atomic test & set behavior
-		"parseTime":    "true",         // enable us to use sql.Rows.Scan to read time.Time objects from queries
-		"loc":          "UTC",          // Scan'd time.Times should be treated as being in UTC time zone
-		"time_zone":    "UTC",          // MySQL should interpret DATETIME values as being in UTC
+		"transaction_isolation": "SERIALIZABLE", // we need serializable transactions for atomic test & set behavior
+		"parseTime":             "true",         // enable us to use sql.Rows.Scan to read time.Time objects from queries
+		"loc":                   "UTC",          // Scan'd time.Times should be treated as being in UTC time zone
+		"time_zone":             "UTC",          // MySQL should interpret DATETIME values as being in UTC
 	}
 
 	var ss []string
@@ -376,27 +376,26 @@ func respectsMinTimeBetweenKills(tx *sql.Tx, now time.Time, term chaosmonkey.Ter
 // workday ends at 5PM, this would be 17
 // loc is the location that corresponds to endHour, e.g. America/Los_Angeles for PST
 //
-// The returned time will be in UTC
+// # The returned time will be in UTC
 //
 // If days=1, then we allow
 // kills each day, so the most recent kill will be at the
 // end of the previous workday. For example:
 //
-//  days: 1
-//  endHour: 17 (i.e. work day ends at 5PM local time)
-//  loc:  America/Los_Angeles (PST)
-//  chrono.Now(): Wed, Dec. 16, 2015 2:30 PM PST
-//  Output: Tue, Dec. 15, 2015 5:00 PM PST
+//	days: 1
+//	endHour: 17 (i.e. work day ends at 5PM local time)
+//	loc:  America/Los_Angeles (PST)
+//	chrono.Now(): Wed, Dec. 16, 2015 2:30 PM PST
+//	Output: Tue, Dec. 15, 2015 5:00 PM PST
 //
-//
-// If days=0, returns the the current date, with
+// If days=0, returns the current date, with
 // the time set to endHour. For example:
 //
-//  days: 0
-//  endHour: 17 (i.e. work day ends at 5PM local time)
-//  loc:  America/Los_Angeles (PST)
-//  chrono.Now(): Wed, Dec. 16, 2015 2:30 PM PST
-//  Output: Wed, Dec. 16, 2015 5:00 PM PST
+//	days: 0
+//	endHour: 17 (i.e. work day ends at 5PM local time)
+//	loc:  America/Los_Angeles (PST)
+//	chrono.Now(): Wed, Dec. 16, 2015 2:30 PM PST
+//	Output: Wed, Dec. 16, 2015 5:00 PM PST
 //
 // noKillsSince returns the a datetime that is the last allowed time that a kill
 // is permitted to have happened.
