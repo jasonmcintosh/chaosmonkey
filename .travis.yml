@@ -15,7 +15,7 @@ services:
 install:
     - docker pull mysql:8.0
     - go install github.com/kisielk/errcheck@latest
-    - wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.61.0
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.61.0
 
 # With the "docker" tag enabled on go test invocation (-tags docker)
 # the mysql:5.6 docker container will be started
@@ -24,10 +24,9 @@ install:
 script:
     - sudo service mysql stop
     - diff -u <(echo -n) <(gofmt -d `find . -name '*.go' | grep -Ev '/vendor/|/migration'`)
-    - make lint 
     - go vet `go list ./... | grep -v /vendor/`
     - errcheck -ignore 'io:Close' -ignoretests `go list ./... | grep -v /vendor/`
-    - make all
+    - make clean test build lint
 
 after_success:
     - ./update-docs.sh
