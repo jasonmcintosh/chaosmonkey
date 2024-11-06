@@ -11,7 +11,6 @@ BUILD_DIR=$(shell pwd)/build
 CURRENT_DIR=$(shell pwd)
 
 LDFLAGS = -ldflags "-X main.COMMIT=${COMMIT} -X main.BRANCH=${BRANCH}"
-GO111MODULE=on 
 GOFLAGS='-mod=vendor' 
 GOOS=linux 
 UNAME_S := $(shell uname -s)
