@@ -30,9 +30,9 @@ clean:
 	go clean
 
 build: check
-	go build -i ${LDFLAGS} -o ${BUILD_DIR}/${BINARY} ./cmd/${BINARY}/main.go
+	go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY} ./cmd/${BINARY}/main.go
 
-check: fmt lint 
+check: fmt  
 
 gofmt: fmt
 
@@ -40,12 +40,8 @@ fmt:
 	cd ${PROJECT_DIR}; \
 	go fmt $$(go list ./... | grep -v /vendor/) ; 
 
-GOLINT=$(GOPATH)/bin/golint
-$(GOLINT):
-	go get -v github.com/golang/lint/golint
-
 lint: $(GOLINT)
-	@$(GOLINT) $(PKGS)
+	golangci-lint run 
 
 #errcheck:
 	#errcheck -ignore 'io:Close' -ignoretests `go list ./... | grep -v -e '/vendor/' -e '/migration'`
