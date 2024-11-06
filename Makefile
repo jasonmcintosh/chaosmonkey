@@ -7,7 +7,6 @@ REPO=$(shell basename $(shell git rev-parse --show-toplevel))
 PKGS := $(shell go list ./... | grep -v -e /integration -e /vendor)
 INTEGRATION_PKGS := $(shell go list ./... | grep /integration)
 
-PROJECT_DIR=${GOPATH}/src/github.com/Netflix/chaosmonkey
 BUILD_DIR=$(shell pwd)/build
 CURRENT_DIR=$(shell pwd)
 
@@ -20,10 +19,10 @@ ifeq ($(UNAME_S),Linux)
         LDFLAGS = -ldflags "-X main.COMMIT=${COMMIT} -X main.BRANCH=${BRANCH} -linkmode external -extldflags -static -s -w"
 endif
 
+all: clean test build
+
 docker:
 	docker build . -t netflix/chaosmonkey:${COMMIT}
-
-all: clean test build
 
 clean:
 	rm -rf ${BUILD_DIR}
@@ -37,7 +36,6 @@ check: fmt
 gofmt: fmt
 
 fmt: 
-	cd ${PROJECT_DIR}; \
 	go fmt $$(go list ./... | grep -v /vendor/) ; 
 
 lint: $(GOLINT)
